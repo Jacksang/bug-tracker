@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Tracker — Submit a Bug</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --error: #dc2626;
+      --error-light: #fef2f2;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --warning: #d97706;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --white: #fff;
+      --radius: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header { text-align: center; margin-bottom: 32px; }
+    .header h1 { font-size: 28px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .header p { font-size: 14px; color: var(--gray-500); }
+    .header .badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 36px;
+    }
+
+    .form { display: flex; flex-direction: column; gap: 20px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+    .field .hint { font-size: 11px; color: var(--gray-400); }
+
+    input[type="text"], input[type="url"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--gray-800);
+      background: var(--white);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    .project-selector {
+      background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+      border: 2px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .project-selector label { font-weight: 700; color: #1e40af; }
+    .project-selector select { font-weight: 600; border-color: #93c5fd; }
+
+    /* Drag & drop */
+    .drop-zone {
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--gray-50);
+    }
+    .drop-zone:hover, .drop-zone.active { border-color: var(--primary); background: #eff6ff; }
+    .drop-zone .icon { font-size: 32px; margin-bottom: 8px; }
+    .drop-zone .text { font-size: 13px; color: var(--gray-500); }
+    .drop-zone .text strong { color: var(--primary); }
+
+    .preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .preview-item {
+      position: relative; border: 1px solid var(--gray-200); border-radius: 6px;
+      overflow: hidden; background: var(--gray-50);
+    }
+    .preview-item img { width: 72px; height: 72px; object-fit: cover; display: block; }
+    .preview-item .rm {
+      position: absolute; top: 2px; right: 2px;
+      background: rgba(0,0,0,0.55); color: white; border: none;
+      border-radius: 50%; width: 22px; height: 22px; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 0; line-height: 1;
+    }
+    .preview-item .rm:hover { background: rgba(0,0,0,0.8); }
+
+    .btn-submit {
+      padding: 12px 36px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+      width: fit-content;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-submit .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-submit.loading .spinner { display: inline-block; }
+    .btn-submit .arrow { font-size: 18px; }
+
+    .success-box {
+      display: none;
+      padding: 20px;
+      background: var(--success-light);
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius);
+      margin-top: 24px;
+      text-align: center;
+    }
+    .success-box.visible { display: block; }
+    .success-box h3 { font-size: 18px; color: #166534; margin-bottom: 8px; }
+    .success-box p { font-size: 14px; color: #15803d; margin-bottom: 4px; }
+    .success-box code {
+      background: #dcfce7; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600;
+    }
+    .success-box .next-steps {
+      margin-top: 16px;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--gray-600);
+      text-align: left;
+      line-height: 1.8;
+    }
+    .success-box .next-steps strong { color: var(--gray-800); }
+
+    .error-box {
+      display: none;
+      padding: 12px 16px;
+      background: var(--error-light);
+      color: var(--error);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .error-box.visible { display: block; }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    @media (max-width: 600px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+      .card { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <h1>🐛 Bug Tracker</h1>
+      <p>Submit bugs to any project. Eva2 picks them up after you check in.</p>
+      <div class="badge">🔄 Auto-detects projects from workspace</div>
+    </div>
+
+    <div class="card">
+      <form class="form" id="bug-form">
+
+        <!-- Project Selector -->
+        <div class="project-selector">
+          <div class="field">
+            <label for="project">📁 Project</label>
+            <span class="hint">Bug will be saved to this project's bugs/ folder</span>
+            <select id="project" name="project" required>
+              <option value="">Loading projects…</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Bug Title -->
+        <div class="field">
+          <label for="title">🔖 Bug Title *</label>
+          <span class="hint">Short and descriptive — "Login button unresponsive on Safari"</span>
+          <input type="text" id="title" name="title" placeholder="What's broken?" required maxlength="120">
+        </div>
+
+        <!-- Severity + Name + Page -->
+        <div class="row-3">
+          <div class="field">
+            <label for="severity">⚡ Severity</label>
+            <select id="severity" name="severity" required>
+              <option value="critical">🔴 Critical — Blocker</option>
+              <option value="high">🟠 High — Major feature</option>
+              <option value="medium" selected>🟡 Medium — Partial</option>
+              <option value="low">🟢 Low — Cosmetic</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reported_by">👤 Your Name</label>
+            <input type="text" id="reported_by" name="reported_by" placeholder="Your name" maxlength="60">
+          </div>
+          <div class="field">
+            <label for="page_route">🔗 Page / Route</label>
+            <input type="text" id="page_route" name="page_route" placeholder="#/register, #/dashboard" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Browser + Device -->
+        <div class="row-2">
+          <div class="field">
+            <label for="browser">🌐 Browser</label>
+            <input type="text" id="browser" name="browser" placeholder="Chrome 148, Safari 17" maxlength="60">
+          </div>
+          <div class="field">
+            <label for="device">📱 Device</label>
+            <input type="text" id="device" name="device" placeholder="Desktop 1920×1080, iPhone 14" maxlength="60">
+          </div>
+        </div>
+
+        <!-- Steps -->
+        <div class="field">
+          <label for="steps">👣 Steps to Reproduce *</label>
+          <span class="hint">Numbered list — the exact steps that trigger the bug</span>
+          <textarea id="steps" name="steps" placeholder="1. Go to http://localhost:3002/#/register&#10;2. Fill in all fields&#10;3. Click Create Account&#10;4. Observe the error" required></textarea>
+        </div>
+
+        <!-- Expected vs Actual -->
+        <div class="row-2">
+          <div class="field">
+            <label for="expected">✅ Expected Behavior</label>
+            <textarea id="expected" name="expected" placeholder="What should have happened?"></textarea>
+          </div>
+          <div class="field">
+            <label for="actual">❌ Actual Behavior</label>
+            <textarea id="actual" name="actual" placeholder="What actually happened?"></textarea>
+          </div>
+        </div>
+
+        <!-- Screenshots -->
+        <div class="field">
+          <label>📸 Screenshots</label>
+          <span class="hint">Drag & drop or click to upload (max 5, 10MB each)</span>
+          <div class="drop-zone" id="drop-zone">
+            <div class="icon">🖼️</div>
+            <div class="text">Drop screenshots here or <strong>browse files</strong></div>
+            <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="preview-list" id="preview-list"></div>
+        </div>
+
+        <!-- Console Errors -->
+        <div class="field">
+          <label for="console_errors">🖥️ Console Errors</label>
+          <span class="hint">Copy from browser DevTools → Console (optional)</span>
+          <textarea id="console_errors" name="console_errors" placeholder="TypeError: Cannot read property..." style="font-family: 'SF Mono', Monaco, monospace; font-size: 12px;"></textarea>
+        </div>
+
+        <!-- Suggested Fix -->
+        <div class="field">
+          <label for="suggested_fix">💡 Suggested Fix</label>
+          <span class="hint">If you have an idea what might be wrong (optional)</span>
+          <textarea id="suggested_fix" name="suggested_fix" placeholder="The router might not be initialized before auth.js tries to use it..."></textarea>
+        </div>
+
+        <!-- Error -->
+        <div class="error-box" id="error-box"></div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <span id="submit-text">Submit Bug</span>
+          <span class="spinner" id="submit-spinner"></span>
+          <span class="arrow">→</span>
+        </button>
+      </form>
+
+      <!-- Success -->
+      <div class="success-box" id="success-box">
+        <h3>✅ Bug Submitted!</h3>
+        <p>Project: <code id="success-project"></code></p>
+        <p>Bug ID: <code id="success-bug-id"></code></p>
+        <p>File: <code id="success-file"></code></p>
+        <div class="next-steps" id="next-steps">
+          <strong>📋 Next Steps:</strong><br>
+          1️⃣ Continue testing — submit more bugs as you find them<br>
+          2️⃣ When done, <strong>check everything into GitHub</strong><br>
+          3️⃣ Tell Eva2: <em>"I completed [project] test"</em><br>
+          4️⃣ Eva2 pulls latest, reads all <strong>[ ] New</strong> bugs, and fixes them
+        </div>
+        <button class="btn-submit" style="margin:16px auto 0; background:var(--success);" onclick="resetForm()">
+          Submit Another Bug
+        </button>
+      </div>
+    </div>
+
+    <p class="footer-text">Bugs are saved directly to the project's bugs/ folder. No database, no config — just files.</p>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      var dropZone = document.getElementById('drop-zone');
+      var fileInput = document.getElementById('screenshots');
+      var previewList = document.getElementById('preview-list');
+      var form = document.getElementById('bug-form');
+      var errorBox = document.getElementById('error-box');
+      var successBox = document.getElementById('success-box');
+      var submitBtn = document.getElementById('submit-btn');
+      var submitText = document.getElementById('submit-text');
+      var submitSpinner = document.getElementById('submit-spinner');
+      var projectSelect = document.getElementById('project');
+      var selectedFiles = [];
+
+      // ── Load projects ────────────────────────────────────
+
+      fetch('/api/projects')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          projectSelect.innerHTML = '';
+          if (!data.projects || data.projects.length === 0) {
+            projectSelect.innerHTML = '<option value="">No projects found — add a bugs/ folder to a project</option>';
+            return;
+          }
+          projectSelect.innerHTML = '<option value="">Choose a project…</option>';
+          data.projects.forEach(function(p) {
+            projectSelect.innerHTML += '<option value="' + p.id + '">📁 ' + p.name + '</option>';
+          });
+        })
+        .catch(function() {
+          projectSelect.innerHTML = '<option value="">Failed to load projects — is the server running?</option>';
+        });
+
+      // ── Drag & Drop ──────────────────────────────────────
+
+      dropZone.addEventListener('click', function() { fileInput.click(); });
+      dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('active'); });
+      dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('active'); });
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        addFiles(e.dataTransfer.files);
+      });
+      fileInput.addEventListener('change', function() {
+        addFiles(fileInput.files);
+        fileInput.value = '';
+      });
+
+      function addFiles(fileList) {
+        for (var i = 0; i < fileList.length; i++) {
+          var file = fileList[i];
+          if (!file.type.startsWith('image/')) continue;
+          if (selectedFiles.length >= 5) break;
+          if (selectedFiles.some(function(f) { return f.name === file.name && f.size === file.size; })) continue;
+          selectedFiles.push(file);
+          renderPreview(file);
+        }
+      }
+
+      function renderPreview(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var idx = selectedFiles.indexOf(file);
+          var item = document.createElement('div');
+          item.className = 'preview-item';
+          item.innerHTML = '<img src="' + e.target.result + '" alt="Preview"><button class="rm" data-idx="' + idx + '">✕</button>';
+          previewList.appendChild(item);
+          item.querySelector('.rm').addEventListener('click', function() {
+            var i = parseInt(this.getAttribute('data-idx'));
+            selectedFiles.splice(i, 1);
+            item.remove();
+            rebuildPreviews();
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function rebuildPreviews() {
+        previewList.innerHTML = '';
+        for (var i = 0; i < selectedFiles.length; i++) renderPreview(selectedFiles[i]);
+      }
+
+      // ── Submit ───────────────────────────────────────────
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        errorBox.classList.remove('visible');
+
+        if (!projectSelect.value) { showError('Please select a project.'); return; }
+        var title = document.getElementById('title').value.trim();
+        if (!title) { showError('Please enter a bug title.'); return; }
+        var steps = document.getElementById('steps').value.trim();
+        if (!steps) { showError('Please describe steps to reproduce.'); return; }
+
+        setLoading(true);
+        var fd = new FormData();
+        fd.append('project', projectSelect.value);
+        fd.append('title', title);
+        fd.append('severity', document.getElementById('severity').value);
+        fd.append('reported_by', document.getElementById('reported_by').value.trim());
+        fd.append('page_route', document.getElementById('page_route').value.trim());
+        fd.append('browser', document.getElementById('browser').value.trim());
+        fd.append('device', document.getElementById('device').value.trim());
+        fd.append('steps', steps);
+        fd.append('expected', document.getElementById('expected').value.trim());
+        fd.append('actual', document.getElementById('actual').value.trim());
+        fd.append('console_errors', document.getElementById('console_errors').value.trim());
+        fd.append('suggested_fix', document.getElementById('suggested_fix').value.trim());
+        for (var i = 0; i < selectedFiles.length; i++) fd.append('screenshots', selectedFiles[i]);
+
+        fetch('/api/submit', { method: 'POST', body: fd })
+          .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+          .then(function(result) {
+            setLoading(false);
+            if (result.ok) {
+              form.style.display = 'none';
+              successBox.classList.add('visible');
+              document.getElementById('success-project').textContent = result.data.project;
+              document.getElementById('success-bug-id').textContent = result.data.bug_id;
+              document.getElementById('success-file').textContent = result.data.file;
+              successBox.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              showError(result.data.message || result.data.error || 'Submission failed');
+            }
+          })
+          .catch(function(err) {
+            setLoading(false);
+            showError('Network error: ' + err.message);
+          });
+      });
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitText.style.display = loading ? 'none' : '';
+        submitBtn.classList.toggle('loading', loading);
+      }
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.add('visible');
+        errorBox.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      window.resetForm = function() {
+        selectedFiles = [];
+        previewList.innerHTML = '';
+        form.reset();
+        form.style.display = '';
+        successBox.classList.remove('visible');
+        errorBox.classList.remove('visible');
+        document.getElementById('severity').value = 'medium';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    })();
+  </script>
+</body>
+</html>
