@@ -77,14 +77,12 @@ function scanProjects() {
     const entries = fs.readdirSync(WORKSPACE_PROJECTS, { withFileTypes: true });
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'bug-tracker') continue;
-      const bugsDir = path.join(WORKSPACE_PROJECTS, entry.name, 'bugs');
-      if (fs.existsSync(bugsDir) && fs.statSync(bugsDir).isDirectory()) {
-        projects.push({
-          id: entry.name,
-          name: entry.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-          path: path.join(WORKSPACE_PROJECTS, entry.name),
-        });
-      }
+      // Show all projects — bugs/ folder will be auto-created on first submission
+      projects.push({
+        id: entry.name,
+        name: entry.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        path: path.join(WORKSPACE_PROJECTS, entry.name),
+      });
     }
   } catch (err) {
     console.error('[bug-tracker] Error scanning projects:', err.message);
@@ -214,15 +212,11 @@ app.post('/api/submit', upload.array('screenshots', 5), function (req, res) {
     const body = req.body;
     const project = body.project;
 
-    // Validate project exists
-    if (!project) {
-      return res.status(422).json({ error: 'validation_error', fields: ['project'], message: 'No project selected' });
-    }
+    // Ensure bugs/ directory exists (auto-create on first submission)
     const projectPath = path.join(WORKSPACE_PROJECTS, project);
     const bugsDir = path.join(projectPath, 'bugs');
-    if (!fs.existsSync(bugsDir)) {
-      return res.status(422).json({ error: 'validation_error', fields: ['project'], message: `Project "${project}" has no bugs/ folder` });
-    }
+    const screenshotsDir = path.join(bugsDir, 'screenshots');
+    fs.mkdirSync(screenshotsDir, { recursive: true });
 
     // Validate title
     if (!body.title || !body.title.trim()) {
