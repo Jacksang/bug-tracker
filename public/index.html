@@ -300,10 +300,10 @@
         <!-- Screenshots -->
         <div class="field">
           <label>📸 Screenshots</label>
-          <span class="hint">Drag & drop or click to upload (max 5, 10MB each)</span>
+          <span class="hint">Drop, paste (Ctrl+V), or click to upload (max 5, 10MB each)</span>
           <div class="drop-zone" id="drop-zone">
             <div class="icon">🖼️</div>
-            <div class="text">Drop screenshots here or <strong>browse files</strong></div>
+            <div class="text">Drop screenshots here, <strong>browse files</strong>, or <strong>Ctrl+V paste</strong></div>
             <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple style="display:none;">
           </div>
           <div class="preview-list" id="preview-list"></div>
@@ -439,6 +439,30 @@
         previewList.innerHTML = '';
         for (var i = 0; i < selectedFiles.length; i++) renderPreview(selectedFiles[i]);
       }
+
+      // ── Clipboard paste ─────────────────────────────────
+
+      document.addEventListener('paste', function(e) {
+        var clipboardItems = e.clipboardData && e.clipboardData.items;
+        if (!clipboardItems) return;
+        for (var i = 0; i < clipboardItems.length; i++) {
+          var item = clipboardItems[i];
+          if (item.type.indexOf('image/') === 0) {
+            e.preventDefault();
+            if (selectedFiles.length >= 5) {
+              showError('Max 5 screenshots allowed.');
+              return;
+            }
+            var blob = item.getAsFile();
+            var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            var pasteFile = new File([blob], 'pasted-' + timestamp + '.png', { type: blob.type || 'image/png' });
+            selectedFiles.push(pasteFile);
+            renderPreview(pasteFile);
+            previewList.scrollIntoView({ behavior: 'smooth' });
+            return;
+          }
+        }
+      });
 
       // ── Submit ───────────────────────────────────────────
 
