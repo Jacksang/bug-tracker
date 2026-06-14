@@ -1,0 +1,1 @@
+ I saved my resume previously and exported as a json file 2. In the new version with Applicant Header, when I open the old data, all the predefined sections are gone. 3. I tried to import resume from my saved json, the old data is not shown

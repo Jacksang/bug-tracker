@@ -1,541 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bug Tracker — Submit a Bug</title>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --error: #dc2626;
-      --error-light: #fef2f2;
-      --success: #16a34a;
-      --success-light: #f0fdf4;
-      --warning: #d97706;
-      --gray-50: #f9fafb;
-      --gray-100: #f3f4f6;
-      --gray-200: #e5e7eb;
-      --gray-300: #d1d5db;
-      --gray-400: #9ca3af;
-      --gray-500: #6b7280;
-      --gray-600: #4b5563;
-      --gray-700: #374151;
-      --gray-800: #1f2937;
-      --gray-900: #111827;
-      --white: #fff;
-      --radius: 8px;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--gray-50);
-      color: var(--gray-800);
-      line-height: 1.5;
-    }
-
-    .page {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    .header { text-align: center; margin-bottom: 32px; }
-    .header h1 { font-size: 28px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
-    .header p { font-size: 14px; color: var(--gray-500); }
-    .header .badge {
-      display: inline-block;
-      background: #fef3c7;
-      color: #92400e;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-top: 8px;
-    }
-
-    .card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      padding: 36px;
-    }
-
-    .form { display: flex; flex-direction: column; gap: 20px; }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-    .field { display: flex; flex-direction: column; gap: 4px; }
-    .field label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
-    .field .hint { font-size: 11px; color: var(--gray-400); }
-
-    input[type="text"], input[type="url"], select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius);
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--gray-800);
-      background: var(--white);
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
-      cursor: pointer;
-    }
-
-    .project-selector {
-      background: linear-gradient(135deg, #eff6ff, #f0f9ff);
-      border: 2px solid #bfdbfe;
-      border-radius: var(--radius);
-      padding: 16px;
-    }
-    .project-selector label { font-weight: 700; color: #1e40af; }
-    .project-selector select { font-weight: 600; border-color: #93c5fd; }
-
-    /* Drag & drop */
-    .drop-zone {
-      border: 2px dashed var(--gray-300);
-      border-radius: var(--radius);
-      padding: 28px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s;
-      background: var(--gray-50);
-    }
-    .drop-zone:hover, .drop-zone.active { border-color: var(--primary); background: #eff6ff; }
-    .drop-zone .icon { font-size: 32px; margin-bottom: 8px; }
-    .drop-zone .text { font-size: 13px; color: var(--gray-500); }
-    .drop-zone .text strong { color: var(--primary); }
-
-    .preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .preview-item {
-      position: relative; border: 1px solid var(--gray-200); border-radius: 6px;
-      overflow: hidden; background: var(--gray-50);
-    }
-    .preview-item img { width: 72px; height: 72px; object-fit: cover; display: block; }
-    .preview-item .rm {
-      position: absolute; top: 2px; right: 2px;
-      background: rgba(0,0,0,0.55); color: white; border: none;
-      border-radius: 50%; width: 22px; height: 22px; font-size: 13px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      padding: 0; line-height: 1;
-    }
-    .preview-item .rm:hover { background: rgba(0,0,0,0.8); }
-
-    .btn-submit {
-      padding: 12px 36px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: background 0.15s;
-      width: fit-content;
-    }
-    .btn-submit:hover { background: var(--primary-dark); }
-    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-submit .spinner {
-      display: none;
-      width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .btn-submit.loading .spinner { display: inline-block; }
-    .btn-submit .arrow { font-size: 18px; }
-
-    .success-box {
-      display: none;
-      padding: 20px;
-      background: var(--success-light);
-      border: 1px solid #bbf7d0;
-      border-radius: var(--radius);
-      margin-top: 24px;
-      text-align: center;
-    }
-    .success-box.visible { display: block; }
-    .success-box h3 { font-size: 18px; color: #166534; margin-bottom: 8px; }
-    .success-box p { font-size: 14px; color: #15803d; margin-bottom: 4px; }
-    .success-box code {
-      background: #dcfce7; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600;
-    }
-    .success-box .next-steps {
-      margin-top: 16px;
-      padding: 12px;
-      background: white;
-      border-radius: 6px;
-      font-size: 13px;
-      color: var(--gray-600);
-      text-align: left;
-      line-height: 1.8;
-    }
-    .success-box .next-steps strong { color: var(--gray-800); }
-
-    .error-box {
-      display: none;
-      padding: 12px 16px;
-      background: var(--error-light);
-      color: var(--error);
-      border-radius: var(--radius);
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .error-box.visible { display: block; }
-
-    .footer-text {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--gray-400);
-    }
-
-    @media (max-width: 600px) {
-      .row-2, .row-3 { grid-template-columns: 1fr; }
-      .card { padding: 24px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug Tracker</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--error:#dc2626;--success:#16a34a;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;--white:#fff;--radius:8px;--sidebar-w:360px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--gray-50);color:var(--gray-800);line-height:1.5;height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-header{padding:20px 16px 12px;border-bottom:1px solid var(--gray-200)}
+.sidebar-header h1{font-size:20px;font-weight:700;color:var(--gray-900)}
+.sidebar-header .sub{font-size:12px;color:var(--gray-400);margin-top:2px}
+.project-bar{padding:12px 16px;background:#eff6ff;border-bottom:1px solid #bfdbfe}
+.project-bar select{width:100%;padding:8px 10px;border:1px solid #93c5fd;border-radius:var(--radius);font-size:13px;font-weight:600;background:var(--white);appearance:none;cursor:pointer}
+.project-bar select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+#bug-list{flex:1;overflow-y:auto;padding:4px 0}
+.list-empty{padding:32px 16px;text-align:center;color:var(--gray-400);font-size:13px}
+.list-header{padding:8px 16px 4px;font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em}
+.bug-list-item{padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .1s;border-bottom:1px solid var(--gray-100)}
+.bug-list-item:hover{background:var(--gray-50)}
+.bug-list-item.active{background:#eff6ff;border-left-color:var(--primary)}
+.bli-top{display:flex;gap:6px;align-items:center;font-size:11px;margin-bottom:3px}
+.bli-id{font-weight:700;color:var(--gray-500);font-family:monospace}
+.bli-sev{font-size:12px}
+.bli-status{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--gray-100);color:var(--gray-600);margin-left:auto}
+.bli-title{font-size:13px;font-weight:600;color:var(--gray-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bli-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main-tabs{display:flex;border-bottom:1px solid var(--gray-200);background:var(--white);flex-shrink:0}
+.tab-btn{padding:10px 20px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--gray-500);border-bottom:2px solid transparent;transition:all .1s}
+.tab-btn:hover{color:var(--gray-700)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-content{flex:1;overflow:hidden;display:none}
+.tab-content.active{display:flex;flex-direction:column}
+.viewer{flex:1;overflow-y:auto;padding:24px 32px}
+.viewer-loading,.viewer-error{padding:40px;text-align:center;color:var(--gray-400)}
+.viewer-error{color:var(--error)}
+.viewer-header{margin-bottom:20px}
+.viewer-header h2{font-size:22px;font-weight:700;color:var(--gray-900);margin-bottom:8px}
+.viewer-meta{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--gray-500);align-items:center}
+.viewer-meta strong{color:var(--gray-800)}
+.status-select{padding:4px 8px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;cursor:pointer;background:var(--white);font-weight:600}
+.move-btn{font-size:11px;padding:3px 10px;border:1px solid var(--gray-300);border-radius:6px;cursor:pointer;background:var(--white);color:var(--gray-600)}
+.move-btn:hover{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.move-dialog-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:100;display:flex;align-items:center;justify-content:center}
+.move-dialog{background:var(--white);border-radius:12px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:300px}
+.move-dialog h3{margin-bottom:12px;font-size:16px}
+.move-dialog select{width:100%;padding:8px 10px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:13px;margin-bottom:12px}
+.move-dialog-actions{display:flex;gap:8px;justify-content:flex-end}
+.viewer-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;padding:12px 16px;background:var(--gray-50);border-radius:var(--radius);font-size:13px}
+.viewer-fields div{display:flex;gap:6px}
+.viewer-fields label{color:var(--gray-500);flex-shrink:0;width:80px}
+.viewer-body{font-size:14px;line-height:1.7;color:var(--gray-700)}
+.viewer-body p{margin-bottom:8px}
+.viewer-body strong{color:var(--gray-900)}
+.viewer-body code{background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px}
+.viewer-body pre{background:#1f2937;color:#e5e7eb;padding:12px 16px;border-radius:var(--radius);overflow-x:auto;font-size:12px;margin:8px 0}
+.viewer-body hr{margin:16px 0;border:none;border-top:1px solid var(--gray-200)}
+.viewer-body .img-link{color:var(--primary);font-size:13px}
+.viewer-shots{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.viewer-shots img{width:120px;height:90px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--gray-200)}
+.viewer-shots img:hover{opacity:0.8}
+.viewer-file{margin-top:16px;padding:8px 12px;background:var(--gray-100);border-radius:6px;font-size:12px;color:var(--gray-500);font-family:monospace}
+.form-container{padding:24px 32px;overflow-y:auto;flex:1}
+.card{background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:32px;max-width:700px}
+.form{display:flex;flex-direction:column;gap:16px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:13px;font-weight:600;color:var(--gray-700)}
+.field .hint{font-size:11px;color:var(--gray-400)}
+input[type="text"],input[type="url"],select,textarea{width:100%;padding:9px 12px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--gray-800);background:var(--white);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+textarea{resize:vertical;min-height:70px}
+select{appearance:none;cursor:pointer}
+.drop-zone{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all .15s;background:var(--gray-50)}
+.drop-zone:hover,.drop-zone.active{border-color:var(--primary);background:#eff6ff}
+.drop-zone .icon{font-size:28px;margin-bottom:4px}
+.drop-zone .text{font-size:12px;color:var(--gray-500)}
+.drop-zone .text strong{color:var(--primary)}
+.preview-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.preview-item{position:relative;border:1px solid var(--gray-200);border-radius:6px;overflow:hidden;background:var(--gray-50)}
+.preview-item img{width:64px;height:64px;object-fit:cover;display:block}
+.preview-item .rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.btn-submit{padding:10px 28px;background:var(--primary);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;width:fit-content;transition:background .15s}
+.btn-submit:hover{background:var(--primary-dark)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.error-box{display:none;padding:10px 14px;background:#fef2f2;color:var(--error);border-radius:var(--radius);font-size:13px}
+.error-box.visible{display:block}
+.success-box{display:none;padding:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);text-align:center}
+.success-box.visible{display:block}
+.success-box h3{font-size:16px;color:#166534;margin-bottom:4px}
+.success-box p{font-size:13px;color:#15803d}
+.footer{text-align:center;padding:12px;font-size:11px;color:var(--gray-400);border-top:1px solid var(--gray-200);flex-shrink:0}
+@media(max-width:720px){.app{flex-direction:column}.sidebar{width:100%;height:auto;max-height:40vh;border-right:none;border-bottom:1px solid var(--gray-200)}.row-2,.row-3{grid-template-columns:1fr}.viewer{padding:16px}.form-container{padding:16px}.viewer-fields{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="page">
-    <div class="header">
-      <h1>🐛 Bug Tracker</h1>
-      <p>Submit bugs to any project. Eva2 picks them up after you check in.</p>
-      <div class="badge">🔄 Auto-detects projects from workspace</div>
-    </div>
-
-    <div class="card">
-      <form class="form" id="bug-form">
-
-        <!-- Project Selector -->
-        <div class="project-selector">
-          <div class="field">
-            <label for="project">📁 Project</label>
-            <span class="hint">Bug will be saved to this project's bugs/ folder</span>
-            <select id="project" name="project" required>
-              <option value="">Loading projects…</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Bug Title -->
-        <div class="field">
-          <label for="title">🔖 Bug Title *</label>
-          <span class="hint">Short and descriptive — "Login button unresponsive on Safari"</span>
-          <input type="text" id="title" name="title" placeholder="What's broken?" required maxlength="120">
-        </div>
-
-        <!-- Severity + Name + Page -->
-        <div class="row-3">
-          <div class="field">
-            <label for="severity">⚡ Severity</label>
-            <select id="severity" name="severity" required>
-              <option value="critical">🔴 Critical — Blocker</option>
-              <option value="high">🟠 High — Major feature</option>
-              <option value="medium" selected>🟡 Medium — Partial</option>
-              <option value="low">🟢 Low — Cosmetic</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="reported_by">👤 Your Name</label>
-            <input type="text" id="reported_by" name="reported_by" placeholder="Your name" maxlength="60">
-          </div>
-          <div class="field">
-            <label for="page_route">🔗 Page / Route</label>
-            <input type="text" id="page_route" name="page_route" placeholder="#/register, #/dashboard" maxlength="100">
-          </div>
-        </div>
-
-        <!-- Browser + Device -->
-        <div class="row-2">
-          <div class="field">
-            <label for="browser">🌐 Browser</label>
-            <input type="text" id="browser" name="browser" placeholder="Chrome 148, Safari 17" maxlength="60">
-          </div>
-          <div class="field">
-            <label for="device">📱 Device</label>
-            <input type="text" id="device" name="device" placeholder="Desktop 1920×1080, iPhone 14" maxlength="60">
-          </div>
-        </div>
-
-        <!-- Steps -->
-        <div class="field">
-          <label for="steps">👣 Steps to Reproduce *</label>
-          <span class="hint">Numbered list — the exact steps that trigger the bug</span>
-          <textarea id="steps" name="steps" placeholder="1. Go to http://localhost:3002/#/register&#10;2. Fill in all fields&#10;3. Click Create Account&#10;4. Observe the error" required></textarea>
-        </div>
-
-        <!-- Expected vs Actual -->
-        <div class="row-2">
-          <div class="field">
-            <label for="expected">✅ Expected Behavior</label>
-            <textarea id="expected" name="expected" placeholder="What should have happened?"></textarea>
-          </div>
-          <div class="field">
-            <label for="actual">❌ Actual Behavior</label>
-            <textarea id="actual" name="actual" placeholder="What actually happened?"></textarea>
-          </div>
-        </div>
-
-        <!-- Screenshots -->
-        <div class="field">
-          <label>📸 Screenshots</label>
-          <span class="hint">Drop, paste (Ctrl+V), or click to upload (max 5, 10MB each)</span>
-          <div class="drop-zone" id="drop-zone">
-            <div class="icon">🖼️</div>
-            <div class="text">Drop screenshots here, <strong>browse files</strong>, or <strong>Ctrl+V paste</strong></div>
-            <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple style="display:none;">
-          </div>
-          <div class="preview-list" id="preview-list"></div>
-        </div>
-
-        <!-- Console Errors -->
-        <div class="field">
-          <label for="console_errors">🖥️ Console Errors</label>
-          <span class="hint">Copy from browser DevTools → Console (optional)</span>
-          <textarea id="console_errors" name="console_errors" placeholder="TypeError: Cannot read property..." style="font-family: 'SF Mono', Monaco, monospace; font-size: 12px;"></textarea>
-        </div>
-
-        <!-- Suggested Fix -->
-        <div class="field">
-          <label for="suggested_fix">💡 Suggested Fix</label>
-          <span class="hint">If you have an idea what might be wrong (optional)</span>
-          <textarea id="suggested_fix" name="suggested_fix" placeholder="The router might not be initialized before auth.js tries to use it..."></textarea>
-        </div>
-
-        <!-- Error -->
-        <div class="error-box" id="error-box"></div>
-
-        <!-- Submit -->
-        <button type="submit" class="btn-submit" id="submit-btn">
-          <span id="submit-text">Submit Bug</span>
-          <span class="spinner" id="submit-spinner"></span>
-          <span class="arrow">→</span>
-        </button>
-      </form>
-
-      <!-- Success -->
-      <div class="success-box" id="success-box">
-        <h3>✅ Bug Submitted!</h3>
-        <p>Project: <code id="success-project"></code></p>
-        <p>Bug ID: <code id="success-bug-id"></code></p>
-        <p>File: <code id="success-file"></code></p>
-        <div class="next-steps" id="next-steps">
-          <strong>📋 Next Steps:</strong><br>
-          1️⃣ Continue testing — submit more bugs as you find them<br>
-          2️⃣ When done, <strong>check everything into GitHub</strong><br>
-          3️⃣ Tell Eva2: <em>"I completed [project] test"</em><br>
-          4️⃣ Eva2 pulls latest, reads all <strong>[ ] New</strong> bugs, and fixes them
-        </div>
-        <button class="btn-submit" style="margin:16px auto 0; background:var(--success);" onclick="resetForm()">
-          Submit Another Bug
-        </button>
-      </div>
-    </div>
-
-    <p class="footer-text">Bugs are saved directly to the project's bugs/ folder. No database, no config — just files.</p>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header"><h1>🐛 Bug Tracker</h1><div class="sub">Select project → view & manage bugs</div></div>
+    <div class="project-bar"><select id="project"><option value="">Loading projects…</option></select></div>
+    <div id="bug-list"><div class="list-empty">Select a project to view bugs</div></div>
   </div>
+  <div class="main">
+    <div class="main-tabs">
+      <button class="tab-btn active" onclick="switchTab('viewer')">📋 Bug Viewer</button>
+      <button class="tab-btn" onclick="switchTab('submit')">+ New Bug</button>
+    </div>
+    <div class="tab-content active" id="tab-viewer">
+      <div class="viewer" id="viewer"><div class="viewer-loading">Select a project and click a bug from the list</div></div>
+    </div>
+    <div class="tab-content" id="tab-submit">
+      <div class="form-container"><div class="card">
+        <form class="form" id="bug-form">
+          <div class="field" style="display:none"><select id="form-project" name="project"></select></div>
+          <div class="field"><label>🔖 Bug Title *</label><input type="text" id="title" name="title" required maxlength="120"></div>
+          <div class="row-3">
+            <div class="field"><label>⚡ Severity</label><select id="severity"><option value="critical">🔴 Critical</option><option value="high">🟠 High</option><option value="medium" selected>🟡 Medium</option><option value="low">🟢 Low</option></select></div>
+            <div class="field"><label>👤 Your Name</label><input type="text" id="reported_by" maxlength="60"></div>
+            <div class="field"><label>🔗 Page / Route</label><input type="text" id="page_route" maxlength="100"></div>
+          </div>
+          <div class="row-2">
+            <div class="field"><label>🌐 Browser</label><input type="text" id="browser" maxlength="60"></div>
+            <div class="field"><label>📱 Device</label><input type="text" id="device" maxlength="60"></div>
+          </div>
+          <div class="field"><label>👣 Steps *</label><textarea id="steps" required></textarea></div>
+          <div class="row-2">
+            <div class="field"><label>✅ Expected</label><textarea id="expected"></textarea></div>
+            <div class="field"><label>❌ Actual</label><textarea id="actual"></textarea></div>
+          </div>
+          <div class="field">
+            <label>📎 Attachments</label><span class="hint">Images, .txt, .json, .csv — max 5</span>
+            <div class="drop-zone" id="drop-zone"><div class="icon">📎</div><div class="text">Drop files, <strong>browse</strong>, or <strong>paste</strong></div><input type="file" id="screenshots" accept="image/*,.txt,.json,.csv,.log" multiple style="display:none"></div>
+            <div class="preview-list" id="preview-list"></div>
+          </div>
+          <div class="field"><label>🖥️ Console Errors</label><textarea id="console_errors" style="font-family:monospace;font-size:12px"></textarea></div>
+          <div class="field"><label>💡 Suggested Fix</label><textarea id="suggested_fix"></textarea></div>
+          <div class="error-box" id="error-box"></div>
+          <button type="submit" class="btn-submit">Submit Bug →</button>
+        </form>
+        <div class="success-box" id="success-box">
+          <h3>✅ Bug Submitted!</h3>
+          <p>Bug ID: <code id="success-bug-id"></code></p>
+          <p>File: <code id="success-file"></code></p>
+          <button class="btn-submit" style="margin:12px auto 0;background:var(--success)" onclick="resetForm()">Submit Another</button>
+        </div>
+      </div></div>
+    </div>
+    <div class="footer">Bugs saved directly to the project's <code>bugs/</code> folder</div>
+  </div>
+</div>
 
-  <script>
-    (function() {
-      'use strict';
+<!-- Move dialog -->
+<div id="move-dialog" class="move-dialog-overlay" style="display:none" onclick="if(event.target===this)closeMoveDialog()">
+  <div class="move-dialog">
+    <h3>➡ Move Bug to Another Project</h3>
+    <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">The bug file and its screenshots will be moved. A new bug number will be assigned in the target project.</p>
+    <select id="move-target"><option value="">Choose target project…</option></select>
+    <div class="move-dialog-actions">
+      <button class="btn-submit" style="background:var(--gray-400)" onclick="closeMoveDialog()">Cancel</button>
+      <button class="btn-submit" onclick="confirmMove()">Move →</button>
+    </div>
+  </div>
+</div>
 
-      var dropZone = document.getElementById('drop-zone');
-      var fileInput = document.getElementById('screenshots');
-      var previewList = document.getElementById('preview-list');
-      var form = document.getElementById('bug-form');
-      var errorBox = document.getElementById('error-box');
-      var successBox = document.getElementById('success-box');
-      var submitBtn = document.getElementById('submit-btn');
-      var submitText = document.getElementById('submit-text');
-      var submitSpinner = document.getElementById('submit-spinner');
-      var projectSelect = document.getElementById('project');
-      var selectedFiles = [];
+<script>
+var currentProject='',currentBugId='';
+function switchTab(n){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');document.querySelector('.tab-btn[onclick*="\'+n+\'"]')||(document.querySelectorAll('.tab-btn')[n==='viewer'?0:1].classList.add('active'))}
+var PERSIST=['reported_by','browser','device','page_route'];
+function savePersisted(){PERSIST.forEach(function(id){var el=document.getElementById(id);if(el)sessionStorage.setItem('bugtracker_'+id,el.value)})}
+function restorePersisted(){PERSIST.forEach(function(id){var el=document.getElementById(id);if(!el)return;var v=sessionStorage.getItem('bugtracker_'+id);if(v)el.value=v});var p=sessionStorage.getItem('bugtracker_project');if(p){var sel=document.getElementById('project');sel.value=p}}
+setTimeout(restorePersisted,600);PERSIST.forEach(function(id){var el=document.getElementById(id);if(el){el.addEventListener('change',savePersisted);el.addEventListener('input',savePersisted)}});
+fetch('/api/projects').then(r=>r.json()).then(function(d){var sel=document.getElementById('project'),fsel=document.getElementById('form-project'),msel=document.getElementById('move-target');sel.innerHTML='<option value="">Choose a project…</option>';fsel.innerHTML='';msel.innerHTML='<option value="">Choose target project…</option>';d.projects.forEach(function(p){sel.innerHTML+='<option value="'+p.id+'">📁 '+p.name+'</option>';fsel.innerHTML+='<option value="'+p.id+'">'+p.name+'</option>';msel.innerHTML+='<option value="'+p.id+'">'+p.name+'</option>'});restorePersisted();if(sel.value)loadBugs(sel.value)});
+document.getElementById('project').addEventListener('change',function(){sessionStorage.setItem('bugtracker_project',this.value);if(this.value)loadBugs(this.value);else{document.getElementById('bug-list').innerHTML='<div class="list-empty">Select a project</div>';document.getElementById('viewer').innerHTML='<div class="viewer-loading">Select a project</div>'}});
 
-      // ── Load projects ────────────────────────────────────
+function loadBugs(p){var list=document.getElementById('bug-list');list.innerHTML='<div class="list-empty">Loading…</div>';fetch('/api/projects/'+p+'/bugs').then(r=>r.json()).then(function(d){if(!d.bugs||d.bugs.length===0){list.innerHTML='<div class="list-empty">No bugs yet</div>';return}list.innerHTML='<div class="list-header">📋 '+d.bugs.length+' bug(s)</div>';d.bugs.forEach(function(b){var sev={critical:'🔴',high:'🟠',medium:'🟡',low:'🟢'};list.innerHTML+='<div class="bug-list-item" data-id="'+b.id+'" onclick="window.showBug(\''+p+'\',\''+b.id+'\')"><div class="bli-top"><span class="bli-id">'+b.id+'</span><span class="bli-sev">'+(sev[b.severity]||'🟡')+'</span><span class="bli-status">'+label(b.status)+'</span></div><div class="bli-title">'+esc(b.title)+'</div><div class="bli-meta">'+(b.reported_by||'Anonymous')+' &middot; '+(b.date||'')+'</div></div>'})}).catch(function(){list.innerHTML='<div class="list-empty">Error loading bugs</div>'})}
+function label(s){return s==='new'?'🆕 New':s==='done'?'✅ Done':s==='cancelled'?'🚫 Cancelled':s==='in_progress'?'🔄 In Progress':'🆕 New'}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-      fetch('/api/projects')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          projectSelect.innerHTML = '';
-          if (!data.projects || data.projects.length === 0) {
-            projectSelect.innerHTML = '<option value="">No projects found — add a bugs/ folder to a project</option>';
-            return;
-          }
-          projectSelect.innerHTML = '<option value="">Choose a project…</option>';
-          data.projects.forEach(function(p) {
-            projectSelect.innerHTML += '<option value="' + p.id + '">📁 ' + p.name + '</option>';
-          });
-        })
-        .catch(function() {
-          projectSelect.innerHTML = '<option value="">Failed to load projects — is the server running?</option>';
-        });
+function showBug(p,bid){currentProject=p;currentBugId=bid;var v=document.getElementById('viewer');v.innerHTML='<div class="viewer-loading">Loading…</div>';fetch('/api/projects/'+p+'/bugs/'+bid).then(r=>r.json()).then(function(d){if(d.error){v.innerHTML='<div class="viewer-error">'+d.error+'</div>';return}var b=d.bug;document.querySelectorAll('.bug-list-item').forEach(function(el){el.classList.remove('active')});var li=document.querySelector('.bug-list-item[data-id="'+b.id+'"]');if(li)li.classList.add('active');var sev={critical:'🔴 Critical',high:'🟠 High',medium:'🟡 Medium',low:'🟢 Low'};var shots='';if(b.screenshots&&b.screenshots.length>0){shots='<h3 style="margin:16px 0 8px;font-size:14px">📸 Screenshots</h3><div class="viewer-shots">';b.screenshots.forEach(function(s){shots+='<img src="screenshots/'+s+'" alt="screenshot" onclick="window.open(\'screenshots/'+s+'\',\'_blank\')">'});shots+='</div>'}var sopts='<option value="new"'+(b.status==='new'?' selected':'')+'>🆕 New</option><option value="in_progress"'+(b.status==='in_progress'?' selected':'')+'>🔄 In Progress</option><option value="done"'+(b.status==='done'?' selected':'')+'>✅ Done</option><option value="cancelled"'+(b.status==='cancelled'?' selected':'')+'>🚫 Cancelled</option>';v.innerHTML='<div class="viewer-header"><h2>'+esc(b.title)+'</h2><div class="viewer-meta"><span>ID: <strong>'+esc(b.id)+'</strong></span><span>Severity: '+(sev[b.severity]||'🟡 Medium')+'</span><span>Status: <select class="status-select" onchange="window.updateStatus(\''+p+'\',\''+b.id+'\',this.value)">'+sopts+'</select></span><span><button class="move-btn" onclick="window.showMoveDialog(\''+p+'\',\''+b.id+'\')">➡ Move to Project</button></span></div></div><div class="viewer-fields"><div><label>Reporter</label><span>'+(b.reported_by||'—')+'</span></div><div><label>Date</label><span>'+(b.date||'—')+'</span></div><div><label>Page</label><span>'+(b.page_route||'—')+'</span></div><div><label>Browser</label><span>'+(b.browser||'—')+'</span></div><div><label>Device</label><span>'+(b.device||'—')+'</span></div></div><div class="viewer-body">'+renderMd(d.content)+'</div>'+shots+'<div class="viewer-file">📄 '+esc(b.filename)+'</div>'}).catch(function(){v.innerHTML='<div class="viewer-error">Failed to load bug</div>'})}
 
-      // ── Drag & Drop ──────────────────────────────────────
+function updateStatus(p,bid,s){fetch('/api/projects/'+p+'/bugs/'+bid,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s})}).then(r=>r.json()).then(function(d){if(d.success){loadBugs(p);var sel=document.querySelector('.status-select');if(sel){sel.style.outline='2px solid #16a34a';setTimeout(function(){sel.style.outline=''},1500)}}}).catch(function(){})}
+function renderMd(c){var h=c;h=h.replace(/!\[(.*?)\]\((.*?)\)/g,'<a href="$2" target="_blank" class="img-link">📷 $1</a>');h=h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');h=h.replace(/`([^`]+)`/g,'<code>$1</code>');h=h.replace(/^---+/gm,'<hr>');h=h.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');h=h.replace(/\n\n/g,'</p><p>');return'<p>'+h+'</p>'}
 
-      dropZone.addEventListener('click', function() { fileInput.click(); });
-      dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('active'); });
-      dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('active'); });
-      dropZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        dropZone.classList.remove('active');
-        addFiles(e.dataTransfer.files);
-      });
-      fileInput.addEventListener('change', function() {
-        addFiles(fileInput.files);
-        fileInput.value = '';
-      });
+/* Move dialog */
+function showMoveDialog(p,bid){currentProject=p;currentBugId=bid;document.getElementById('move-dialog').style.display='flex'}
+function closeMoveDialog(){document.getElementById('move-dialog').style.display='none'}
+function confirmMove(){var target=document.getElementById('move-target').value;if(!target){alert('Please select a target project');return}if(target===currentProject){alert('Target is the same as current project');return}if(!confirm('Move '+currentBugId+' to '+target+'?'))return;fetch('/api/projects/'+currentProject+'/bugs/'+currentBugId+'/move',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetProject:target})}).then(r=>r.json()).then(function(d){if(d.success){closeMoveDialog();document.getElementById('viewer').innerHTML='<div class="viewer-loading">✅ Moved to '+d.moved.project+' as <strong>'+d.moved.bug_id+'</strong></div>';loadBugs(currentProject)}}).catch(function(){alert('Move failed')})}
 
-      function addFiles(fileList) {
-        for (var i = 0; i < fileList.length; i++) {
-          var file = fileList[i];
-          if (!file.type.startsWith('image/')) continue;
-          if (selectedFiles.length >= 5) break;
-          if (selectedFiles.some(function(f) { return f.name === file.name && f.size === file.size; })) continue;
-          selectedFiles.push(file);
-          renderPreview(file);
-        }
-      }
-
-      function renderPreview(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var idx = selectedFiles.indexOf(file);
-          var item = document.createElement('div');
-          item.className = 'preview-item';
-          item.innerHTML = '<img src="' + e.target.result + '" alt="Preview"><button class="rm" data-idx="' + idx + '">✕</button>';
-          previewList.appendChild(item);
-          item.querySelector('.rm').addEventListener('click', function() {
-            var i = parseInt(this.getAttribute('data-idx'));
-            selectedFiles.splice(i, 1);
-            item.remove();
-            rebuildPreviews();
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-
-      function rebuildPreviews() {
-        previewList.innerHTML = '';
-        for (var i = 0; i < selectedFiles.length; i++) renderPreview(selectedFiles[i]);
-      }
-
-      // ── Clipboard paste ─────────────────────────────────
-
-      document.addEventListener('paste', function(e) {
-        var clipboardItems = e.clipboardData && e.clipboardData.items;
-        if (!clipboardItems) return;
-        for (var i = 0; i < clipboardItems.length; i++) {
-          var item = clipboardItems[i];
-          if (item.type.indexOf('image/') === 0) {
-            e.preventDefault();
-            if (selectedFiles.length >= 5) {
-              showError('Max 5 screenshots allowed.');
-              return;
-            }
-            var blob = item.getAsFile();
-            var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            var pasteFile = new File([blob], 'pasted-' + timestamp + '.png', { type: blob.type || 'image/png' });
-            selectedFiles.push(pasteFile);
-            renderPreview(pasteFile);
-            previewList.scrollIntoView({ behavior: 'smooth' });
-            return;
-          }
-        }
-      });
-
-      // ── Submit ───────────────────────────────────────────
-
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        errorBox.classList.remove('visible');
-
-        if (!projectSelect.value) { showError('Please select a project.'); return; }
-        var title = document.getElementById('title').value.trim();
-        if (!title) { showError('Please enter a bug title.'); return; }
-        var steps = document.getElementById('steps').value.trim();
-        if (!steps) { showError('Please describe steps to reproduce.'); return; }
-
-        setLoading(true);
-        var fd = new FormData();
-        fd.append('project', projectSelect.value);
-        fd.append('title', title);
-        fd.append('severity', document.getElementById('severity').value);
-        fd.append('reported_by', document.getElementById('reported_by').value.trim());
-        fd.append('page_route', document.getElementById('page_route').value.trim());
-        fd.append('browser', document.getElementById('browser').value.trim());
-        fd.append('device', document.getElementById('device').value.trim());
-        fd.append('steps', steps);
-        fd.append('expected', document.getElementById('expected').value.trim());
-        fd.append('actual', document.getElementById('actual').value.trim());
-        fd.append('console_errors', document.getElementById('console_errors').value.trim());
-        fd.append('suggested_fix', document.getElementById('suggested_fix').value.trim());
-        for (var i = 0; i < selectedFiles.length; i++) fd.append('screenshots', selectedFiles[i]);
-
-        fetch('/api/submit', { method: 'POST', body: fd })
-          .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
-          .then(function(result) {
-            setLoading(false);
-            if (result.ok) {
-              form.style.display = 'none';
-              successBox.classList.add('visible');
-              document.getElementById('success-project').textContent = result.data.project;
-              document.getElementById('success-bug-id').textContent = result.data.bug_id;
-              document.getElementById('success-file').textContent = result.data.file;
-              successBox.scrollIntoView({ behavior: 'smooth' });
-            } else {
-              showError(result.data.message || result.data.error || 'Submission failed');
-            }
-          })
-          .catch(function(err) {
-            setLoading(false);
-            showError('Network error: ' + err.message);
-          });
-      });
-
-      function setLoading(loading) {
-        submitBtn.disabled = loading;
-        submitText.style.display = loading ? 'none' : '';
-        submitBtn.classList.toggle('loading', loading);
-      }
-
-      function showError(msg) {
-        errorBox.textContent = msg;
-        errorBox.classList.add('visible');
-        errorBox.scrollIntoView({ behavior: 'smooth' });
-      }
-
-      window.resetForm = function() {
-        selectedFiles = [];
-        previewList.innerHTML = '';
-        form.reset();
-        form.style.display = '';
-        successBox.classList.remove('visible');
-        errorBox.classList.remove('visible');
-        document.getElementById('severity').value = 'medium';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-    })();
-  </script>
+/* Submit form */
+var selectedFiles=[];var dropZone=document.getElementById('drop-zone');var fileInput=document.getElementById('screenshots');var previewList=document.getElementById('preview-list');
+dropZone.addEventListener('click',function(){fileInput.click()});dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('active')});dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('active')});dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('active');addFiles(e.dataTransfer.files)});fileInput.addEventListener('change',function(){addFiles(fileInput.files);fileInput.value=''});
+function addFiles(fl){for(var i=0;i<fl.length;i++){var f=fl[i];var ext=f.name.split('.').pop().toLowerCase();var ok=f.type.startsWith('image/')||['txt','json','csv','log'].includes(ext);if(!ok)continue;if(selectedFiles.length>=5){alert('Max 5 files');break}if(selectedFiles.some(function(x){return x.name===f.name&&x.size===f.size}))continue;selectedFiles.push(f);renderPreview(f)}}
+function fileIcon(f){var ext=f.name.split('.').pop().toLowerCase();if(f.type.startsWith('image/'))return'🖼️';if(ext==='json')return'📋';if(ext==='csv')return'📊';if(ext==='log')return'📝';return'📄'}
+function renderPreview(f){var idx=selectedFiles.indexOf(f);var item=document.createElement('div');item.className='preview-item';if(f.type.startsWith('image/')){var r=new FileReader();r.onload=function(e){item.innerHTML='<img src="'+e.target.result+'" alt="Preview"><button class="rm" data-idx="'+idx+'">×</button>'};r.readAsDataURL(f)}else{item.style.width='90px';item.style.padding='8px';item.style.textAlign='center';item.innerHTML='<div style="font-size:24px;line-height:1.4">'+fileIcon(f)+'</div><div style="font-size:10px;color:var(--gray-600);word-break:break-all">'+f.name+'</div><button class="rm" data-idx="'+idx+'">×</button>'}previewList.appendChild(item);item.querySelector('.rm').addEventListener('click',function(){var i=parseInt(this.getAttribute('data-idx'));selectedFiles.splice(i,1);item.remove();rebuildPreviews()})}
+function rebuildPreviews(){previewList.innerHTML='';selectedFiles.forEach(function(f){renderPreview(f)})}
+document.addEventListener('paste',function(e){var target=e.target;var isDropZone=target===dropZone||dropZone.contains(target);if(!isDropZone)return;e.preventDefault();var items=e.clipboardData&&e.clipboardData.items;if(!items)return;for(var i=0;i<items.length;i++){var item=items[i];if(selectedFiles.length>=5){alert('Max 5 files');return}if(item.type.indexOf('image/')===0){var blob=item.getAsFile();var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);var pf=new File([blob],'pasted-'+ts+'.png',{type:blob.type||'image/png'});selectedFiles.push(pf);renderPreview(pf);return}if(item.kind==='string'){item.getAsString(function(text){if(!text.trim())return;var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);var blob=new Blob([text],{type:'text/plain'});var pf=new File([blob],'data-'+ts+'.txt',{type:'text/plain'});selectedFiles.push(pf);renderPreview(pf)});return}}});
+document.getElementById('bug-form').addEventListener('submit',function(e){e.preventDefault();var eb=document.getElementById('error-box');eb.classList.remove('visible');var sel=document.getElementById('project');if(!sel.value){eb.textContent='Select a project first.';eb.classList.add('visible');return}if(!document.getElementById('title').value.trim()){eb.textContent='Title is required.';eb.classList.add('visible');return}if(!document.getElementById('steps').value.trim()){eb.textContent='Steps are required.';eb.classList.add('visible');return}var fd=new FormData();fd.append('project',sel.value);fd.append('title',document.getElementById('title').value.trim());fd.append('severity',document.getElementById('severity').value);fd.append('reported_by',document.getElementById('reported_by').value.trim());fd.append('page_route',document.getElementById('page_route').value.trim());fd.append('browser',document.getElementById('browser').value.trim());fd.append('device',document.getElementById('device').value.trim());fd.append('steps',document.getElementById('steps').value.trim());fd.append('expected',document.getElementById('expected').value.trim());fd.append('actual',document.getElementById('actual').value.trim());fd.append('console_errors',document.getElementById('console_errors').value.trim());fd.append('suggested_fix',document.getElementById('suggested_fix').value.trim());selectedFiles.forEach(function(f){fd.append('screenshots',f)});document.querySelector('.btn-submit').disabled=true;fetch('/api/submit',{method:'POST',body:fd}).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})}).then(function(r){document.querySelector('.btn-submit').disabled=false;if(r.ok){document.getElementById('bug-form').style.display='none';document.getElementById('success-box').classList.add('visible');document.getElementById('success-bug-id').textContent=r.data.bug_id;document.getElementById('success-file').textContent=r.data.file;loadBugs(sel.value)}else{eb.textContent=r.data.message||'Failed';eb.classList.add('visible')}}).catch(function(err){document.querySelector('.btn-submit').disabled=false;eb.textContent='Error: '+err.message;eb.classList.add('visible')})});
+function resetForm(){selectedFiles=[];previewList.innerHTML='';document.getElementById('bug-form').reset();document.getElementById('bug-form').style.display='';document.getElementById('success-box').classList.remove('visible');document.getElementById('error-box').classList.remove('visible');document.getElementById('severity').value='medium';restorePersisted()}
+</script>
 </body>
 </html>
