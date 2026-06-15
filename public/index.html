@@ -96,6 +96,54 @@ select{appearance:none;cursor:pointer}
 .success-box p{font-size:13px;color:#15803d}
 .footer{text-align:center;padding:12px;font-size:11px;color:var(--gray-400);border-top:1px solid var(--gray-200);flex-shrink:0}
 @media(max-width:720px){.app{flex-direction:column}.sidebar{width:100%;height:auto;max-height:40vh;border-right:none;border-bottom:1px solid var(--gray-200)}.row-2,.row-3{grid-template-columns:1fr}.viewer{padding:16px}.form-container{padding:16px}.viewer-fields{grid-template-columns:1fr}}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--primary: #60A5FA;
+		--primary-dark: #3B82F6;
+		--error: #F87171;
+		--success: #34D399;
+		--gray-50: #1F2937;
+		--gray-100: #111827;
+		--gray-200: #1F2937;
+		--gray-300: #374151;
+		--gray-400: #9CA3AF;
+		--gray-500: #9CA3AF;
+		--gray-600: #D1D5DB;
+		--gray-700: #E5E7EB;
+		--gray-800: #F3F4F6;
+		--gray-900: #F9FAFB;
+		--white: #1F2937;
+	}
+	body { background: #111827; color: #E5E7EB; }
+	.sidebar { background: #1F2937; border-color: #374151; }
+	.sidebar-header { border-color: #374151; }
+	.sidebar-header h1 { color: #F9FAFB; }
+	.project-bar { background: #1F2937; border-color: #374151; }
+	.project-bar select { background: #111827; color: #E5E7EB; border-color: #4B5563; }
+	.bug-list-item { border-color: #374151; }
+	.bug-list-item:hover { background: #374151; }
+	.bug-list-item.active { background: rgba(96,165,250,0.1); }
+	.bli-title { color: #F3F4F6; }
+	.main-tabs { background: #1F2937; border-color: #374151; }
+	.tab-btn { color: #9CA3AF; }
+	.tab-btn:hover { color: #E5E7EB; }
+	.tab-btn.active { color: #60A5FA; }
+	.viewer-fields { background: #374151; }
+	.viewer-file { background: #374151; }
+	.card { background: #1F2937; border-color: #374151; }
+	.field label { color: #D1D5DB; }
+	input, select, textarea { background: #111827; color: #E5E7EB; border-color: #4B5563; }
+	input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+	.drop-zone { background: #374151; border-color: #4B5563; }
+	.drop-zone:hover, .drop-zone.active { background: rgba(96,165,250,0.1); border-color: var(--primary); }
+	.preview-item { background: #374151; border-color: #4B5563; }
+	.move-dialog { background: #1F2937; }
+	.move-dialog h3 { color: #F9FAFB; }
+	.viewer-body pre { background: #111827; }
+	.viewer-body { color: #D1D5DB; }
+	.footer { border-color: #374151; }
+}
 </style>
 </head>
 <body>
