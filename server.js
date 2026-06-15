@@ -119,7 +119,12 @@ function slugify(title) {
 function formatDate() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const offset = -d.getTimezoneOffset();
+  const sign = offset >= 0 ? '+' : '-';
+  const tzHours = pad(Math.floor(Math.abs(offset) / 60));
+  const tzMins = pad(Math.abs(offset) % 60);
+  const tzLabel = offset === 0 ? 'UTC' : `UTC${sign}${tzHours}:${tzMins}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())} (${tzLabel})`;
 }
 
 function severityEmoji(severity) {
