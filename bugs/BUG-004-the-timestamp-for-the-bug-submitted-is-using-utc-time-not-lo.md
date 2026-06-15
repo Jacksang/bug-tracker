@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | `[ ] New` |
+| **Status** | `[x] Done` |
 | **Reported by** | CS |
 | **Date** | 2026-06-15 17:37 |
 | **Severity** | 🟡 Medium |
@@ -45,6 +45,6 @@ try to use local time for Bug Tracker, if not know which location, then mark the
 
 | Field | Value |
 |-------|-------|
-| **Fix commit** | |
+| **Fix commit** | 6e248c5 |
 | **Resolution** | |
 | **Time spent** | |
