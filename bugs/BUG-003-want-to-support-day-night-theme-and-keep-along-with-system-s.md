@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | `[ ] New` |
+| **Status** | `[x] Done` |
 | **Reported by** | CS |
 | **Date** | 2026-06-15 15:50 |
 | **Severity** | 🟡 Medium |
@@ -41,6 +41,6 @@ Current background of Bug Tracker is always white for day theme
 
 | Field | Value |
 |-------|-------|
-| **Fix commit** | |
-| **Resolution** | |
-| **Time spent** | |
+| **Fix commit** | 0261a64 |
+| **Resolution** | Fixed by Eva2 |
+| **Time spent** | ~10 min |
