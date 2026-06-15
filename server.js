@@ -331,15 +331,12 @@ app.get('/api/projects/:projectId/bugs/:bugId', function (req, res) {
 
 /**
  * PATCH /api/projects/:projectId/bugs/:bugId
- * Update bug status.
- * Body: { status: 'new' | 'done' | 'cancelled' | 'in_progress' }
+ * Update bug status or content.
+ * Body (status update): { status: 'new' | 'done' | 'cancelled' | 'in_progress' }
+ * Body (content update): { content: '<full markdown content>' }
  */
 app.patch('/api/projects/:projectId/bugs/:bugId', function (req, res) {
-  const { status } = req.body;
-  const validStatuses = ['new', 'done', 'cancelled', 'in_progress'];
-  if (!validStatuses.includes(status)) {
-    return res.status(422).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
-  }
+  const { status, content } = req.body;
 
   const projectDir = findProjectDir(req.params.projectId);
   if (!projectDir) return res.status(404).json({ error: 'Project not found' });
@@ -351,7 +348,21 @@ app.patch('/api/projects/:projectId/bugs/:bugId', function (req, res) {
   if (files.length === 0) return res.status(404).json({ error: 'Bug not found' });
 
   const filePath = path.join(bugsDir, files[0]);
-  let content = fs.readFileSync(filePath, 'utf-8');
+
+  // Content update mode
+  if (content !== undefined && status === undefined) {
+    fs.writeFileSync(filePath, content, 'utf-8');
+    console.log(`[bug-tracker] ${req.params.bugId} → content updated`);
+    return res.json({ success: true, bug: req.params.bugId, file: files[0] });
+  }
+
+  // Status update mode
+  const validStatuses = ['new', 'done', 'cancelled', 'in_progress'];
+  if (!validStatuses.includes(status)) {
+    return res.status(422).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+  }
+
+  let fileContent = fs.readFileSync(filePath, 'utf-8');
 
   // Map status to markdown marker
   const markerMap = { new: ' ', done: 'x', cancelled: '~', in_progress: '→' };
@@ -360,20 +371,20 @@ app.patch('/api/projects/:projectId/bugs/:bugId', function (req, res) {
   const label = labelMap[status];
 
   // Replace status line: `[ ] New` → `[x] Done` etc.
-  content = content.replace(
+  fileContent = fileContent.replace(
     /(\*\*Status\*\*\s*\|\s*`\[)\s*([x~→ ])\]\s*(.+?)`/i,
     `$1${marker}] ${label}\` `
   );
 
   // Also update inline in the Eva2 Notes area if status changed to done/cancelled
   if (status === 'done') {
-    if (!content.includes('| **Fix commit** |')) {
+    if (!fileContent.includes('| **Fix commit** |')) {
       const date = formatDate();
-      content += `\n\n_Eva2 auto-marked as ${label} on ${date}_\n`;
+      fileContent += `\n\n_Eva2 auto-marked as ${label} on ${date}_\n`;
     }
   }
 
-  fs.writeFileSync(filePath, content, 'utf-8');
+  fs.writeFileSync(filePath, fileContent, 'utf-8');
   console.log(`[bug-tracker] ${req.params.bugId} → status=${status}`);
 
   res.json({ success: true, bug: req.params.bugId, status, file: files[0] });
